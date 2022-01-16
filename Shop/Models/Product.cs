@@ -13,6 +13,8 @@ namespace Shop.Models
         [MaxLength(500)]
         public string Description { get; set; }
 
+        public decimal Price { get; set; }
+
         public virtual int CategoryId { get; set; }
         public virtual Category category { get; set; }
 

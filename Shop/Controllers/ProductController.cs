@@ -21,7 +21,9 @@ namespace Shop.Controllers
             List<ProductViewModel> Products = new List<ProductViewModel>();
             foreach (var product in _context.Products)
             {
-                ProductViewModel productViewModel = new ProductViewModel() { Id = product.Id,
+                ProductViewModel productViewModel = new ProductViewModel()
+                {
+                    Id = product.Id,
                     Name = product.Name,
                     Description = product.Description,
                     Price = product.Price,
@@ -32,7 +34,7 @@ namespace Shop.Controllers
             return View(Products);
         }
         //Get: Products/Details/5
-        public async Task <IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -52,7 +54,7 @@ namespace Shop.Controllers
                 Price = product.Price,
                 CategoryName = _context.Categories.FirstOrDefault(n => n.Id == product.CategoryId).Name
             };
-            
+
             return View(productViewModel);
         }
         //Get: Product/Create
@@ -64,7 +66,7 @@ namespace Shop.Controllers
         //Post: Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create ([Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
         {
             if (ModelState.IsValid)
             {
@@ -91,16 +93,16 @@ namespace Shop.Controllers
                     _context.Add(productModels);
                     await _context.SaveChangesAsync();
                 }
-                
-                
-               
+
+
+
                 return RedirectToAction(nameof(Index));
             }
             return View(product);
         }
-        
+
         //Get: Product/Edit/n
-        public async Task<IActionResult> Edit (int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -118,11 +120,11 @@ namespace Shop.Controllers
             }
             ProductViewModel productModel = new ProductViewModel()
             {
-                Id=product.Id,
-                Name=product.Name,
-                Description=product.Description,
-                Price=product.Price,
-                CategoryName = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Id == product.CategoryId).Name
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryName = product.Category.Name
             };
             return View(productModel);
         }
@@ -130,7 +132,7 @@ namespace Shop.Controllers
         //Post Product/Edit/n
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id,[Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
         {
             if (id != product.Id)
             {
@@ -177,7 +179,7 @@ namespace Shop.Controllers
         }
 
         // Get: Products/Delete/n
-        public async Task<IActionResult> Delete (int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
 
             if (id == null)

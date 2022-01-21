@@ -17,7 +17,18 @@ namespace Shop.Controllers
         //Get: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.FindAsync());
+            List<ProductViewModel> Products = new List<ProductViewModel>();
+            foreach (var product in _context.Products)
+            {
+                ProductViewModel productViewModel = new ProductViewModel() { Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    Price = product.Price,
+                    CategoryName = _context.Categories.FirstOrDefault(n => n.Id == product.CategoryId).Name.ToString()
+                };
+                Products.Add(productViewModel);
+            }
+            return View(Products);
         }
         //Get: Products/Details/5
         public async Task <IActionResult> Details(int? id)
@@ -49,8 +60,30 @@ namespace Shop.Controllers
             {
                 //ProductViewModel => Product
                 //Add(Product)
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                int categoriesId = 0;
+                bool lExecution = true;
+                if (lExecution && !_context.Categories.Any(n => n.Name.Contains(product.Name)))
+                {
+                    lExecution = false;
+                }
+
+                if (lExecution)
+                {
+                    categoriesId = _context.Categories.FirstOrDefault(n => n.Name.Contains(product.Name)).Id;
+                    Models.Product productModels = new Models.Product()
+                    {
+                        Id = product.Id,
+                        Name = product.Name,
+                        Description = product.Description,
+                        Price = product.Price,
+                        CategoryId = categoriesId
+                    };
+                    _context.Products.Add(productModels);
+                    await _context.SaveChangesAsync();
+                }
+                
+                
+               
                 return RedirectToAction(nameof(Index));
             }
             return View(product);

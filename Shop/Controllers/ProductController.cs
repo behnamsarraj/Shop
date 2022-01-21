@@ -80,7 +80,7 @@ namespace Shop.Controllers
                 if (lExecution)
                 {
                     categoriesId = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())).Id;
-                    Models.Product productModels = new Models.Product()
+                    Product productModels = new Product()
                     {
                         Id = product.Id,
                         Name = product.Name,
@@ -88,7 +88,7 @@ namespace Shop.Controllers
                         Price = product.Price,
                         CategoryId = categoriesId
                     };
-                    _context.Products.Add(productModels);
+                    _context.Add(productModels);
                     await _context.SaveChangesAsync();
                 }
                 
@@ -109,6 +109,10 @@ namespace Shop.Controllers
 
             var product = await _context.Products.FindAsync(id);
             if (product == null)
+            {
+                return NotFound();
+            }
+            if (!_context.Categories.Any(n => n.Id == product.CategoryId))
             {
                 return NotFound();
             }

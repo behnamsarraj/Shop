@@ -7,7 +7,7 @@ namespace Shop.ViewModels
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "نام دسته")]
+        [Display(Name = "Category Name")]
         public string Name { get; set; }
     }
 }

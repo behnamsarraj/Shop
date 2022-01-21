@@ -34,5 +34,21 @@ namespace Shop.Controllers
             var viewModel = new CategoryViewModel();
             return View("Form", viewModel);
         }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new CategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.Name
+            };
+            return View("Form", viewModel);
+        }
     }
 }

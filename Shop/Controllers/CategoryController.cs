@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shop.Data;
+using Shop.Models;
 using Shop.ViewModels;
 
 namespace Shop.Controllers
@@ -26,6 +27,12 @@ namespace Shop.Controllers
                 })
                 .ToList();
             return View(viewModel);
+        }
+
+        public IActionResult Add()
+        {
+            var viewModel = new CategoryViewModel();
+            return View("Form", viewModel);
         }
     }
 }

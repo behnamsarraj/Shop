@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Shop.Data;
 using Shop.ViewModels;
+using Shop.Models;
 
 namespace Shop.Controllers
 {
@@ -24,7 +25,7 @@ namespace Shop.Controllers
                     Name = product.Name,
                     Description = product.Description,
                     Price = product.Price,
-                    CategoryName = _context.Categories.FirstOrDefault(n => n.Id == product.CategoryId).Name.ToString()
+                    CategoryName = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Id == product.CategoryId).Name.ToString()
                 };
                 Products.Add(productViewModel);
             }
@@ -43,7 +44,16 @@ namespace Shop.Controllers
             {
                 return NotFound();
             }
-            return View(product);
+            ProductViewModel productViewModel = new ProductViewModel()
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryName = _context.Categories.FirstOrDefault(n => n.Id == product.CategoryId).Name
+            };
+            
+            return View(productViewModel);
         }
         //Get: Product/Create
         public IActionResult Create()
@@ -62,14 +72,14 @@ namespace Shop.Controllers
                 //Add(Product)
                 int categoriesId = 0;
                 bool lExecution = true;
-                if (lExecution && !_context.Categories.Any(n => n.Name.Contains(product.Name)))
+                if (lExecution && !_context.Categories.Any(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())))
                 {
                     lExecution = false;
                 }
 
                 if (lExecution)
                 {
-                    categoriesId = _context.Categories.FirstOrDefault(n => n.Name.Contains(product.Name)).Id;
+                    categoriesId = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())).Id;
                     Models.Product productModels = new Models.Product()
                     {
                         Id = product.Id,
@@ -102,8 +112,15 @@ namespace Shop.Controllers
             {
                 return NotFound();
             }
-
-            return View();
+            ProductViewModel productModel = new ProductViewModel()
+            {
+                Id=product.Id,
+                Name=product.Name,
+                Description=product.Description,
+                Price=product.Price,
+                CategoryName = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Id == product.CategoryId).Name
+            };
+            return View(productModel);
         }
 
         //Post Product/Edit/n
@@ -115,11 +132,29 @@ namespace Shop.Controllers
             {
                 return NotFound();
             }
+            Product productModel = new Product();
             if (ModelState.IsValid)
             {
                 try
                 {
-
+                    if (!_context.Categories.Any(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())))
+                    {
+                        return NotFound();
+                    }
+                    productModel = new Product()
+                    {
+                        Id = product.Id,
+                        Name = product.Name,
+                        Description = product.Description,
+                        Price = product.Price,
+                        CategoryId = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())).Id
+                    };
+                    if (productModel == null)
+                    {
+                        return NotFound();
+                    }
+                    _context.Products.Update(productModel);
+                    await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -147,13 +182,23 @@ namespace Shop.Controllers
             }
 
             var product = _context.Products.
-                FirstOrDefaultAsync(n => n.Id == id);
+                FirstOrDefault(n => n.Id == id);
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            ProductViewModel productViewModel = new ProductViewModel()
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryName = _context.Categories.FirstOrDefault(n => n.Id == product.CategoryId).Name,
+
+            };
+
+            return View(productViewModel);
         }
 
         // Post: Products/Delete/n
@@ -164,7 +209,7 @@ namespace Shop.Controllers
             var product = await _context.Products.FirstOrDefaultAsync(n => n.Id == id);
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
-            return RedirectToAction();
+            return RedirectToAction(nameof(Index));
         }
 
         private bool ProductExists(int id)

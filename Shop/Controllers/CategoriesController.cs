@@ -24,7 +24,16 @@ namespace Shop.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            IList<CategoryViewModel> categories = new List<CategoryViewModel>();
+            foreach (var category in _context.Categories)
+            {
+                categories.Add( new CategoryViewModel
+                { 
+                    Id = category.Id, 
+                    Name = category.Name 
+                });
+            }
+            return View(categories);
         }
 
         // GET: Categories/Details/5
@@ -62,7 +71,15 @@ namespace Shop.Controllers
             {
                 //CategoryViewModel => Category
                 //Add(Category)
-                _context.Add(category);
+                Category categoryModel = new Category()
+                {
+                    Id =category.Id,
+                    Name=category.Name
+                };
+                
+
+
+                _context.Add(categoryModel);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -101,7 +118,12 @@ namespace Shop.Controllers
             {
                 try
                 {
-                    _context.Update(category);
+                    Category categoryModel = new Category() { 
+                        Id = category.Id,
+                        Name = category.Name
+                    };
+
+                    _context.Update(categoryModel);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

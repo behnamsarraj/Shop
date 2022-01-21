@@ -50,5 +50,32 @@ namespace Shop.Controllers
             };
             return View("Form", viewModel);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Save(CategoryViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("From", viewModel);
+            }
+
+            if (viewModel.Id == 0)
+            {
+                var category = new Category
+                {
+                    Name = viewModel.Name
+                };
+                _context.Add(category);
+            }
+            else
+            {
+                var category = await _context.Categories.FindAsync(viewModel.Id);
+                category.Name = viewModel.Name;
+                _context.Update(category);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

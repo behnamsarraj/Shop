@@ -68,7 +68,7 @@ namespace Shop.Controllers
                 Text = category.Name
             });
             ViewBag.itemCategories = itemCategories;
-            return View();
+            return View("Form", new ProductViewModel());
         }
 
         //Post: Product/Create
@@ -132,7 +132,7 @@ namespace Shop.Controllers
 
             ViewBag.itemCategories = itemCategories;
 
-            return View(productModel);
+            return View("Form",productModel);
         }
 
         //Post Product/Edit/n
@@ -220,6 +220,46 @@ namespace Shop.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost, ActionName("Save")]
+        [AutoValidateAntiforgeryToken]
+        public async Task<IActionResult> Save(int id,ProductViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Form", viewModel);
+            }
+
+            #region Add Mode
+            if (viewModel.Id == 0)
+            {
+                Product product = new Product()
+                {
+                    Name = viewModel.Name,
+                    Price = viewModel.Price,
+                    Description = viewModel.Description,
+                    CategoryId = viewModel.CategoryId
+                };
+                _context.Products.Add(product);
+            }
+            #endregion
+            #region Edit Mode
+            else
+            {
+                Product product = await _context.Products.FindAsync(viewModel.Id);
+                product.Name = viewModel.Name;
+                product.Description = viewModel.Description;
+                product.Price = viewModel.Price;
+                product.CategoryId = viewModel.CategoryId;
+
+                _context.Update(product);
+
+            }
+
+            #endregion
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
         private bool ProductExists(int id)
         {
             return _context.Products.Any(p => p.Id == id);

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shop.Data;
 using Shop.ViewModels;
 using Shop.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Shop.Controllers
 {
@@ -18,20 +19,21 @@ namespace Shop.Controllers
         //Get: Products
         public async Task<IActionResult> Index()
         {
-            List<ProductViewModel> Products = new List<ProductViewModel>();
-            foreach (var product in _context.Products)
+            List<ProductViewModel> productViewModel = new List<ProductViewModel>();
+            var products = await _context.Products.Include(p => p.Category).ToListAsync();
+            foreach (var product in products)
             {
-                ProductViewModel productViewModel = new ProductViewModel()
+                ProductViewModel viewModel = new ProductViewModel()
                 {
                     Id = product.Id,
                     Name = product.Name,
                     Description = product.Description,
                     Price = product.Price,
-                    CategoryName = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Id == product.CategoryId).Name.ToString()
+                    CategoryName = product.Category.Name
                 };
-                Products.Add(productViewModel);
+                productViewModel.Add(viewModel);
             }
-            return View(Products);
+            return View(productViewModel);
         }
         //Get: Products/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -60,39 +62,35 @@ namespace Shop.Controllers
         //Get: Product/Create
         public IActionResult Create()
         {
+            var itemCategories = _context.Categories.Select(category => new SelectListItem
+            {
+                Value = category.Id.ToString(),
+                Text = category.Name
+            });
+            ViewBag.itemCategories = itemCategories;
             return View();
         }
 
         //Post: Product/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,CategoryId")] ProductViewModel product)
         {
             if (ModelState.IsValid)
             {
                 //ProductViewModel => Product
                 //Add(Product)
-                int categoriesId = 0;
-                bool lExecution = true;
-                if (lExecution && !_context.Categories.Any(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())))
-                {
-                    lExecution = false;
-                }
 
-                if (lExecution)
+                Product productModels = new Product()
                 {
-                    categoriesId = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())).Id;
-                    Product productModels = new Product()
-                    {
-                        Id = product.Id,
-                        Name = product.Name,
-                        Description = product.Description,
-                        Price = product.Price,
-                        CategoryId = categoriesId
-                    };
-                    _context.Add(productModels);
-                    await _context.SaveChangesAsync();
-                }
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    Price = product.Price,
+                    CategoryId = product.CategoryId
+                };
+                _context.Add(productModels);
+                await _context.SaveChangesAsync();
 
 
 
@@ -109,12 +107,10 @@ namespace Shop.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == id);
             if (product == null)
-            {
-                return NotFound();
-            }
-            if (!_context.Categories.Any(n => n.Id == product.CategoryId))
             {
                 return NotFound();
             }
@@ -124,15 +120,25 @@ namespace Shop.Controllers
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
+                CategoryId = product.Category.Id,
                 CategoryName = product.Category.Name
             };
+
+            List<SelectListItem> itemCategories = _context.Categories.Select(categury => new SelectListItem
+            {
+                Value = categury.Id.ToString(),
+                Text = categury.Name
+            }).ToList<SelectListItem>();
+
+            ViewBag.itemCategories = itemCategories;
+
             return View(productModel);
         }
 
         //Post Product/Edit/n
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryName")] ProductViewModel product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,CategoryId")] ProductViewModel product)
         {
             if (id != product.Id)
             {
@@ -143,17 +149,13 @@ namespace Shop.Controllers
             {
                 try
                 {
-                    if (!_context.Categories.Any(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())))
-                    {
-                        return NotFound();
-                    }
                     productModel = new Product()
                     {
                         Id = product.Id,
                         Name = product.Name,
                         Description = product.Description,
                         Price = product.Price,
-                        CategoryId = _context.Categories.OrderBy(n => n.Name).FirstOrDefault(n => n.Name.ToLower().Contains(product.CategoryName.ToLower())).Id
+                        CategoryId = product.CategoryId
                     };
                     if (productModel == null)
                     {

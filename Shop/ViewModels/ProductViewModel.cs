@@ -12,7 +12,10 @@ namespace Shop.ViewModels
         public string Description { get; set; }
         [Display(Name = "قیمت (ريال)")]
         public decimal Price { get; set; }
-        [Display(Name = "دسته یندی")]
-        public string CategoryName { get; set; }
+        [Display(Name = "دسته بندی")]
+        public int CategoryId { get; set; }
+        [Display(Name = "دسته بندی")]
+        public string? CategoryName { get; set; }
+        
     }
 }

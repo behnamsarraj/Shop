@@ -30,7 +30,7 @@
                 <span asp-validation-for="Price" class="text-danger"></span>
 
                 <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="@ViewBag.itemCategories">
+                <select asp-for="CategoryId" class="form-control" asp-items="@Model.CategoriesDropDown">
                     <option>Please select one</option>
                 </select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>

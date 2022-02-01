@@ -60,15 +60,14 @@ namespace Shop.Controllers
             return View(productViewModel);
         }
         //Get: Product/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var itemCategories = _context.Categories.Select(category => new SelectListItem
+            var categoriesDropDown = await _context.Categories.Select(category => new SelectListItem
             {
                 Value = category.Id.ToString(),
                 Text = category.Name
-            });
-            ViewBag.itemCategories = itemCategories;
-            return View("Form", new ProductViewModel());
+            }).ToListAsync();
+            return View("Form", new ProductViewModel { CategoriesDropDown = categoriesDropDown });
         }
 
         //Post: Product/Create
@@ -132,7 +131,7 @@ namespace Shop.Controllers
 
             ViewBag.itemCategories = itemCategories;
 
-            return View("Form",productModel);
+            return View("Form", productModel);
         }
 
         //Post Product/Edit/n
@@ -222,7 +221,7 @@ namespace Shop.Controllers
 
         [HttpPost, ActionName("Save")]
         [AutoValidateAntiforgeryToken]
-        public async Task<IActionResult> Save(int id,ProductViewModel viewModel)
+        public async Task<IActionResult> Save(int id, ProductViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {

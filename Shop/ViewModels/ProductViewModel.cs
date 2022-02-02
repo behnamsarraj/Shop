@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace Shop.ViewModels
 {
@@ -16,6 +17,7 @@ namespace Shop.ViewModels
         public int CategoryId { get; set; }
         [Display(Name = "دسته بندی")]
         public string? CategoryName { get; set; }
-        
+
+        public List<SelectListItem>? CategoriesDropDown { get; set; }
     }
 }
